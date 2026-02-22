@@ -1,31 +1,55 @@
-// Підключення Axios для HTTP-запитів
-import axios from 'axios';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
-// Базовий URL Pixabay API
-const BASE_URL = 'https://pixabay.com/api/';
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+  captionPosition: 'bottom',
+});
 
-// Отримання API-ключа з змінних середовища (.env)
-function getApiKey() {
-  return import.meta.env.VITE_PIXABAY_API_KEY || '';
+const galleryContainer = document.querySelector('.gallery');
+const loader = document.querySelector('.loader');
+
+export function createGallery(images) {
+  const markup = images
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `
+      <li class="gallery-item">
+        <a class="gallery-link" href="${largeImageURL}">
+          <img class="gallery-image" src="${webformatURL}" alt="${tags}" />
+        </a>
+        <div class="info">
+          <p><b>Likes</b>${likes}</p>
+          <p><b>Views</b>${views}</p>
+          <p><b>Comments</b>${comments}</p>
+          <p><b>Downloads</b>${downloads}</p>
+        </div>
+      </li>
+    `
+    )
+    .join('');
+
+  galleryContainer.innerHTML = markup;
+
+  lightbox.refresh();
 }
 
-// Виконання HTTP-запиту за пошуковим словом; повертає data з відповіді
-export function getImagesByQuery(query) {
-  const key = getApiKey();
+export function clearGallery() {
+  galleryContainer.innerHTML = '';
+}
 
-  // Перевірка наявності ключа — якщо відсутній, відхиляємо Promise
-  if (!key || !String(key).trim()) {
-    return Promise.reject(new Error('MISSING_API_KEY'));
-  }
+export function showLoader() {
+  loader.classList.add('is-visible');
+}
 
-  // Параметри запиту згідно з ТЗ (key, q, image_type, orientation, safesearch)
-  const params = {
-    key: key.trim(),
-    q: String(query).trim(),
-    image_type: 'photo',
-    orientation: 'horizontal',
-    safesearch: 'true',
-  };
-
-  return axios.get(BASE_URL, { params }).then((response) => response.data);
+export function hideLoader() {
+  loader.classList.remove('is-visible');
 }

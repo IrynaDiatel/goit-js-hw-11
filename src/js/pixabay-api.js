@@ -1,3 +1,21 @@
+import axios from 'axios';
+
+const API_KEY = '47477357-395d8a047c7c5012d361fddb9';
+
+export async function getImagesByQuery(query) {
+  const response = await axios.get('https://pixabay.com/api/', {
+    params: {
+      key: API_KEY,
+      q: query,
+      image_type: 'photo',
+      orientation: 'horizontal',
+      safesearch: true,
+    },
+  });
+
+  return response.data.hits;
+}
+
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
@@ -53,3 +71,4 @@ export function showLoader() {
 export function hideLoader() {
   loader.classList.remove('is-visible');
 }
+

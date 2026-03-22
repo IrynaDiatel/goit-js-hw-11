@@ -1,51 +1,50 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
-import SimpleLightbox from 'simplelightbox';
-import 'simplelightbox/dist/simple-lightbox.min.css';
-
-import { getImagesByQuery } from './pixabay-api.js';
+import { getImagesByQuery } from './pixabay-api';
 import {
   createGallery,
   clearGallery,
   showLoader,
   hideLoader,
-} from './render-functions.js';
+} from './render-functions';
 
-const searchForm = document.querySelector('.form');
+const form = document.querySelector('.form');
 
-searchForm.addEventListener('submit', event => {
+form.addEventListener('submit', async event => {
   event.preventDefault();
 
-  const query = event.currentTarget.elements['search-text'].value.trim();
+  const query = event.target.elements['search-text'].value.trim();
 
-  if (query === '') {
-    iziToast.warning({ message: 'Please enter a search query!' });
+  // ✅ перевірка на пустий запит
+  if (!query) {
+    iziToast.error({
+      message: 'Please enter a search query!',
+    });
     return;
   }
 
   clearGallery();
   showLoader();
 
-  getImagesByQuery(query)
-    .then(data => {
-      if (data.hits.length === 0) {
-        iziToast.error({
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          position: 'topRight',
-        });
-        return;
-      }
+  try {
+    const data = await getImagesByQuery(query);
 
-      createGallery(data.hits);
-    })
-    .catch(error => {
-      console.error(error);
-      iziToast.error({ message: 'An error occurred. Please try again later.' });
-    })
-    .finally(() => {
-      hideLoader();
-      event.target.reset();
+    // ✅ перевірка результату
+    if (data.hits.length === 0) {
+      iziToast.error({
+        message:
+          'Sorry, there are no images matching your search query. Please try again!',
+      });
+      return;
+    }
+
+    createGallery(data.hits);
+  } catch (error) {
+    iziToast.error({
+      message: 'Something went wrong...',
     });
+  } finally {
+    hideLoader();
+  }
 });

@@ -1,73 +1,55 @@
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
-const galleryEl = document.querySelector('.gallery');
-const loaderEl = document.querySelector('.loader-wrap');
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+  captionPosition: 'bottom',
+});
 
-let lightboxInstance = null;
-
-function createCardMarkup(img) {
-  const {
-    webformatURL,
-    largeImageURL,
-    tags = '',
-    likes = 0,
-    views = 0,
-    comments = 0,
-    downloads = 0,
-  } = img;
-  const alt = String(tags).slice(0, 200);
-
-  return `
-<li class="gallery-item">
-  <a class="gallery-item__link" href="${largeImageURL}" title="${alt}">
-    <img
-      class="gallery-item__img"
-      src="${webformatURL}"
-      alt="${alt}"
-      loading="lazy"
-      width="640"
-      height="360"
-    />
-    <div class="gallery-item__info">
-      <span class="gallery-item__info-item">❤️ ${likes}</span>
-      <span class="gallery-item__info-item">👁 ${views}</span>
-      <span class="gallery-item__info-item">💬 ${comments}</span>
-      <span class="gallery-item__info-item">⬇ ${downloads}</span>
-    </div>
-  </a>
-</li>`;
-}
+const galleryContainer = document.querySelector('.gallery');
+const loader = document.querySelector('.loader');
 
 export function createGallery(images) {
-  if (!galleryEl) return;
-  if (!Array.isArray(images) || images.length === 0) {
-    galleryEl.innerHTML = '';
-    lightboxInstance?.refresh();
-    return;
-  }
+  const markup = images
+    .map(
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `
+      <li class="gallery-item">
+        <a class="gallery-link" href="${largeImageURL}">
+          <img class="gallery-image" src="${webformatURL}" alt="${tags}" />
+        </a>
+        <div class="info">
+          <p><b>Likes</b>${likes}</p>
+          <p><b>Views</b>${views}</p>
+          <p><b>Comments</b>${comments}</p>
+          <p><b>Downloads</b>${downloads}</p>
+        </div>
+      </li>
+    `
+    )
+    .join('');
 
-  const markup = images.map(createCardMarkup).join('');
-  galleryEl.innerHTML = markup;
+  galleryContainer.innerHTML = markup;
 
-  if (!lightboxInstance) {
-    lightboxInstance = new SimpleLightbox('.gallery a', {
-      captionsData: 'title',
-      captionDelay: 250,
-    });
-  } else {
-    lightboxInstance.refresh();
-  }
+  lightbox.refresh();
 }
 
 export function clearGallery() {
-  if (galleryEl) galleryEl.innerHTML = '';
+  galleryContainer.innerHTML = '';
 }
 
 export function showLoader() {
-  if (loaderEl) loaderEl.classList.remove('is-hidden');
+  loader.classList.add('is-visible');
 }
 
 export function hideLoader() {
-  if (loaderEl) loaderEl.classList.add('is-hidden');
+  loader.classList.remove('is-visible');
 }
